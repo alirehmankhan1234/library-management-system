@@ -2,12 +2,13 @@ import mongoose from "mongoose"
 
 const BookTransactionSchema = new mongoose.Schema({
     bookId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, 
         require: true
     },
-    borrowerId: { //EmployeeId or AdmissionId
-        type: String,
-        require: true
+    borrowerId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "User",
+        require: true 
     },
     bookName: {
         type: String,

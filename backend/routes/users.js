@@ -6,14 +6,37 @@ const router = express.Router()
 /* Getting user by id */
 router.get("/getuser/:id", async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).populate("activeTransactions").populate("prevTransactions")
-        const { password, updatedAt, ...other } = user._doc;
-        res.status(200).json(other);
-    } 
-    catch (err) {
-        return res.status(500).json(err);
+        const user = await User.findById(req.params.id)
+            .populate({
+                path: "activeTransactions",
+                select: "-__v", // Exclude version key
+                options: { sort: { createdAt: -1 } } // Newest first
+            })
+            .populate({
+                path: "prevTransactions",
+                select: "-__v",
+                options: { sort: { createdAt: -1 } }
+            });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Transform the document to remove sensitive fields
+        const userObj = user.toObject();
+        delete userObj.password;
+        delete userObj.updatedAt;
+        delete userObj.__v;
+
+        res.status(200).json(userObj);
+    } catch (err) {
+        console.error("Error fetching user:", err);
+        res.status(500).json({ 
+            error: "Failed to fetch user",
+            details: process.env.NODE_ENV === "development" ? err.message : undefined
+        });
     }
-})
+});
 
 /* Getting all members in the library */
 router.get("/allmembers", async (req,res)=>{

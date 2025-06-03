@@ -8,8 +8,8 @@ const router = express.Router();
 router.post("/register", async (req, res) => {
   try {
     /* Salting and Hashing the Password */
-    const salt = await bcrypt.genSalt(10);
-    const hashedPass = await bcrypt.hash(req.body.password, salt);
+    // const salt = await bcrypt.genSalt(10);
+    // const hashedPass = await bcrypt.hash(req.body.password, salt);
 
     /* Create a new user */
     const newuser = await new User({
@@ -23,7 +23,7 @@ router.post("/register", async (req, res) => {
       address: req.body.address,
       mobileNumber: req.body.mobileNumber,
       email: req.body.email,
-      password: hashedPass,
+      password: req.body.password,
       isAdmin: req.body.isAdmin,
     });
 
@@ -51,7 +51,7 @@ router.post("/signin", async (req, res) => {
 
     !user && res.status(404).json("User not found");
 
-    const validPass = await bcrypt.compare(req.body.password, user.password);
+    const validPass = req.body.password == user.password;
     !validPass && res.status(400).json("Wrong Password");
 
     res.status(200).json(user);

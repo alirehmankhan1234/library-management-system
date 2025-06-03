@@ -1,58 +1,66 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./Allbooks.css";
 
 function Allbooks() {
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/books/allbooks");
+        if (!response.ok) {
+          throw new Error("Failed to fetch books");
+        }
+        const data = await response.json();
+        setBooks(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, []);
+
+  if (loading) {
+    return <div className="books-page">Loading books...</div>;
+  }
+
+  if (error) {
+    return <div className="books-page">Error: {error}</div>;
+  }
+
   return (
     <div className="books-page">
       <div className="books">
-        <div className="book-card">
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQp16xiXu1ZtTzbLy-eSwEK4Ng6cUpUZnuGbQ&usqp=CAU"
-            alt=""
-          ></img>
-          <p className="bookcard-title">Wings Of Fire</p>
-          <p className="bookcard-author">By Pranavdhar</p>
-          <div className="bookcard-category">
-            <p>Auto Biography</p>
+        {books.map((book) => (
+          <div className="book-card" key={book._id}>
+            <img
+              src={book.imageUrl || "./assets/images/bookImage.jpg"}
+              alt={book.bookName}
+            ></img>
+            <p className="bookcard-title">{book.bookName}</p>
+            <p className="bookcard-author">By {book.author}</p>
+            <div className="bookcard-category">
+              {book.categories && book.categories.length > 0 ? (
+                <div className="categories-list">
+                  {book.categories.map((category, index) => (
+                    <span key={category._id} className="category-tag">
+                      {category.categoryName}
+                      {index < book.categories.length - 1 && ', '}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p>Uncategorized</p>
+              )}
+            </div>
+            <div className="bookcard-emptybox"></div>
           </div>
-          <div className="bookcard-emptybox"></div>
-        </div>
-        <div className="book-card">
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-Rb2t6jA5ml7n57qdTZbAOWX1qSfsLCbaOA&usqp=CAU"
-            alt=""
-          ></img>
-          <p className="bookcard-title">The Power Of Your Subconscious Mind</p>
-          <p className="bookcard-author">By Joseph</p>
-          <div className="bookcard-category">
-            <p>Psychology</p>
-          </div>
-          <div className="bookcard-emptybox"></div>
-        </div>
-        <div className="book-card">
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRFiDRQ7a-Oo-CnMmnbIMApP1Cq9B5bYx-UA&usqp=CAU"
-            alt=""
-          ></img>
-          <p className="bookcard-title">Elon Musk</p>
-          <p className="bookcard-author">By Elon</p>
-          <div className="bookcard-category">
-            <p>Auto Biography</p>
-          </div>
-          <div className="bookcard-emptybox"></div>
-        </div>
-        <div className="book-card">
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-Rb2t6jA5ml7n57qdTZbAOWX1qSfsLCbaOA&usqp=CAU"
-            alt=""
-          ></img>
-          <p className="bookcard-title">The Subtle Art Of Not Giving A Fuck</p>
-          <p className="bookcard-author">By Mark Manson</p>
-          <div className="bookcard-category">
-            <p>COMIC</p>
-          </div>
-          <div className="bookcard-emptybox"></div>
-        </div>
+        ))}
       </div>
     </div>
   );

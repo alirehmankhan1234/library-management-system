@@ -7,13 +7,19 @@ const router = express.Router()
 /* Get all books in the db */
 router.get("/allbooks", async (req, res) => {
     try {
-        const books = await Book.find({}).populate("transactions").sort({ _id: -1 })
-        res.status(200).json(books)
+        const books = await Book.find({})
+            .populate("transactions")
+            .populate({
+                path: "categories",
+                select: "categoryName _id" // Only include categoryName and _id fields
+            })
+            .sort({ _id: -1 });
+        res.status(200).json(books);
     }
     catch (err) {
         return res.status(504).json(err);
     }
-})
+});
 
 /* Get Book by book Id */
 router.get("/getbook/:id", async (req, res) => {
